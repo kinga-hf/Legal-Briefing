@@ -1,0 +1,38 @@
+{
+  "name": "legal-opposition-summarizer-briefing-tool",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@google/genai": "latest",
+    "@supabase/ssr": "^0.12.3",
+    "@supabase/supabase-js": "^2.110.9",
+    "@tailwindcss/typography": "^0.5.20",
+    "@types/pdfmake": "^0.3.3",
+    "lucide-react": "latest",
+    "next": "latest",
+    "pdf-parse": "latest",
+    "pdfmake": "^0.3.11",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-markdown": "^10.1.0",
+    "react-pdf": "^10.4.1",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.2.12",
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "typescript": "^6.0.3"
+  }
+}

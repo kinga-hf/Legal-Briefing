@@ -1,0 +1,197 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #020617;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@page {
+  size: A4;
+  margin: 18mm 18mm 20mm;
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  body {
+    margin: 0 !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Drukuj wyłącznie aktywny raport, bez formularza i nawigacji aplikacji. */
+  body * {
+    visibility: hidden !important;
+  }
+
+  .print-report,
+  .print-report * {
+    visibility: visible !important;
+  }
+
+  .print-report {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+
+  .print-report * {
+    background: transparent !important;
+    color: #111111 !important;
+    border-color: #000000 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    font-family: "Times New Roman", Times, serif !important;
+  }
+
+  .print-report .no-print,
+  .print-report [data-pdf-exclude],
+  .print-report button,
+  .print-report input,
+  .print-report select,
+  .print-report textarea,
+  .print-report svg,
+  .print-report [class*="rounded-full"],
+  .print-report [class*="badge"],
+  nav,
+  sidebar,
+  button,
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Karty wyników stają się zwykłą, ciągłą treścią dokumentu. */
+  .print-report div,
+  .print-report section,
+  .print-report article,
+  .print-report label {
+    border: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .print-report h1,
+  .print-report h2,
+  .print-report h3,
+  .print-report h4 {
+    color: #000000 !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    margin-top: 16pt !important;
+    margin-bottom: 6pt !important;
+    border-bottom: 1px solid #000000 !important;
+    padding-bottom: 2pt !important;
+  }
+
+  .print-report p,
+  .print-report li {
+    color: #111111 !important;
+    text-align: justify !important;
+  }
+
+  .print-report article {
+    margin: 0 0 12pt !important;
+    padding: 0 0 8pt !important;
+    border-bottom: 1px solid #777777 !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-report article:last-child {
+    border-bottom: none !important;
+  }
+}
+
+@media print {
+  /* Wydruk fiszki na rozprawę obejmuje wyłącznie jej treść. */
+  .court-card-modal,
+  .court-card-modal * {
+    visibility: visible !important;
+  }
+
+  .court-card-modal {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  .court-card-backdrop,
+  .court-card-actions {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .court-card-sheet {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .court-card-sheet * {
+    background: transparent !important;
+    color: #111111 !important;
+    border-color: #111111 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-family: "Times New Roman", Times, serif !important;
+  }
+
+  .court-card-sheet h2,
+  .court-card-sheet h3 {
+    color: #000000 !important;
+    font-weight: bold !important;
+  }
+
+  .court-card-sheet > div {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+}
