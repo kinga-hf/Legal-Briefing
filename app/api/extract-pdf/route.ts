@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { apiError } from "../_safety";
@@ -35,9 +36,15 @@ export async function POST(request: Request) {
     // Ładujemy parser dopiero podczas żądania. Dzięki temu Vercel nie próbuje
     // inicjalizować pdf.js podczas samego ładowania funkcji serverless.
     const { PDFParse } = await import("pdf-parse");
-    PDFParse.setWorker(
-      pathToFileURL(path.join(process.cwd(), "node_modules/pdf-parse/dist/worker/pdf.worker.mjs")).toString(),
-    );
+    const workerPathCandidates = [
+      path.join(process.cwd(), "public/pdf.worker.mjs"),
+      path.join(process.cwd(), "node_modules/pdf-parse/dist/worker/pdf.worker.mjs"),
+    ];
+    const workerPath = workerPathCandidates.find((candidate) => fs.existsSync(candidate));
+    if (!workerPath) {
+      return apiError("PDF_WORKER_MISSING", "Nie udało się uruchomić modułu odczytu PDF. Spróbuj ponownie później.", 503);
+    }
+    PDFParse.setWorker(pathToFileURL(workerPath).toString());
 
     const data = new Uint8Array(await file.arrayBuffer());
     parser = new PDFParse({ data });

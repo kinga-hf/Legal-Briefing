@@ -2,7 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
-    "/api/extract-pdf": ["./node_modules/pdf-parse/dist/worker/pdf.worker.mjs"],
+    "/api/extract-pdf": [
+      "./public/pdf.worker.mjs",
+      "./node_modules/pdf-parse/dist/worker/pdf.worker.mjs",
+    ],
   },
 };
 
