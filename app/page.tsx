@@ -156,6 +156,7 @@ const formalPersonaOptions: Array<{ value: FormalChatPersona; description: strin
 
 const CLIENT_REQUEST_TIMEOUT_MS = 30_000;
 const CLIENT_ANALYSIS_TIMEOUT_MS = 120_000;
+const PUBLIC_TEST_MODE = true;
 
 async function fetchWithTimeout(
   input: RequestInfo | URL,
@@ -521,6 +522,7 @@ function ChatPanel() {
 
       setMessages([...nextMessages, { role: "model", text: payload.message }]);
 
+      if (!PUBLIC_TEST_MODE) {
       try {
         const activeCaseId = caseId ?? await createCaseRecord({
           title: fileName || documentType || "Nowa sprawa",
@@ -534,6 +536,7 @@ function ChatPanel() {
         if (!caseId) setCaseId(activeCaseId);
       } catch (saveError) {
         setError(saveError instanceof Error ? `Odpowiedź jest gotowa, ale nie zapisano historii: ${saveError.message}` : "Odpowiedź jest gotowa, ale nie zapisano historii czatu.");
+      }
       }
     } catch (chatError) {
       setError(chatError instanceof Error ? chatError.message : "Nie udało się wysłać wiadomości. Spróbuj ponownie.");
@@ -739,7 +742,7 @@ function ChatPanel() {
 export default function Home() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(!PUBLIC_TEST_MODE);
   const [userEmail, setUserEmail] = useState("");
   const {
     caseId,
@@ -769,11 +772,12 @@ export default function Home() {
   const [leftPanelWidth, setLeftPanelWidth] = useState(50);
   const [isResizing, setIsResizing] = useState(false);
   const [savedCases, setSavedCases] = useState<SavedCase[]>([]);
-  const [isCasesLoading, setIsCasesLoading] = useState(true);
+  const [isCasesLoading, setIsCasesLoading] = useState(!PUBLIC_TEST_MODE);
   const [isCaseLoading, setIsCaseLoading] = useState(false);
   const [casesError, setCasesError] = useState("");
 
   useEffect(() => {
+    if (PUBLIC_TEST_MODE) return;
     let isMounted = true;
 
     void supabase.auth.getUser().then(({ data }) => {
@@ -802,6 +806,7 @@ export default function Home() {
   }, [router, supabase]);
 
   useEffect(() => {
+    if (PUBLIC_TEST_MODE) return;
     if (authLoading) return;
     let isMounted = true;
     void fetchWithTimeout("/api/cases")
@@ -928,6 +933,7 @@ export default function Home() {
         }
 
         setText(payload.text);
+        if (PUBLIC_TEST_MODE) return;
 
         try {
           const publicUrl = await uploadPdfToStorage(supabase, file);
@@ -1011,6 +1017,7 @@ export default function Home() {
       );
 
       setResult(payload);
+      if (!PUBLIC_TEST_MODE) {
       try {
         const savedCaseId = await createCaseRecord({
           title: fileName || documentType || "Nowa sprawa",
@@ -1024,6 +1031,7 @@ export default function Home() {
         setCaseId(savedCaseId);
       } catch (saveError) {
         setError(saveError instanceof Error ? `Analiza jest gotowa, ale nie zapisano sprawy: ${saveError.message}` : "Analiza jest gotowa, ale nie zapisano sprawy.");
+      }
       }
     } catch (submissionError) {
       setError(
@@ -1072,7 +1080,7 @@ export default function Home() {
                 className="h-[4.5rem] w-64 object-cover object-center"
               />
             </div>
-            <div className="hidden items-center gap-3 text-xs text-slate-400 sm:flex">
+            <div className={PUBLIC_TEST_MODE ? "hidden" : "hidden items-center gap-3 text-xs text-slate-400 sm:flex"}>
               <CheckCircle2 className="h-4 w-4 text-[#C5A059]" aria-hidden="true" />
               Analiza wspierana przez Gemini
               <span className="max-w-44 truncate border-l border-[#C5A059]/20 pl-3" title={userEmail}>{userEmail}</span>
@@ -1119,7 +1127,7 @@ export default function Home() {
           </button>
         </nav>
 
-        <section className="mb-6 rounded-xl border border-[#C5A059]/30 bg-[#002147] p-4 shadow-xl shadow-black/10" aria-labelledby="saved-cases-title">
+        <section className={PUBLIC_TEST_MODE ? "hidden" : "mb-6 rounded-xl border border-[#C5A059]/30 bg-[#002147] p-4 shadow-xl shadow-black/10"} aria-labelledby="saved-cases-title">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C5A059]">Pamięć projektu</p>
