@@ -35,6 +35,12 @@ export async function POST(request: Request) {
   try {
     // Ładujemy parser dopiero podczas żądania. Dzięki temu Vercel nie próbuje
     // inicjalizować pdf.js podczas samego ładowania funkcji serverless.
+    const canvas = await import("@napi-rs/canvas");
+    const runtimeGlobals = globalThis as Record<string, unknown>;
+    runtimeGlobals.DOMMatrix ??= canvas.DOMMatrix;
+    runtimeGlobals.ImageData ??= canvas.ImageData;
+    runtimeGlobals.Path2D ??= canvas.Path2D;
+
     const { PDFParse } = await import("pdf-parse");
     const workerPathCandidates = [
       path.join(process.cwd(), "public/pdf.worker.mjs"),

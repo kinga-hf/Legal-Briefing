@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["@napi-rs/canvas"],
   outputFileTracingIncludes: {
     "/api/extract-pdf": [
       "./public/pdf.worker.mjs",
