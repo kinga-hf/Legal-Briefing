@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export const MAX_STEPS = 5;
 export const API_TIMEOUT_MS = 30_000;
-export const ANALYSIS_TIMEOUT_MS = 120_000;
+export const ANALYSIS_TIMEOUT_MS = 300_000;
 export const MAX_CONTEXT_CHARS = 120_000;
 
 type ErrorDetails = {

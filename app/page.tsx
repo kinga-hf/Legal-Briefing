@@ -155,7 +155,7 @@ const formalPersonaOptions: Array<{ value: FormalChatPersona; description: strin
 ];
 
 const CLIENT_REQUEST_TIMEOUT_MS = 30_000;
-const CLIENT_ANALYSIS_TIMEOUT_MS = 120_000;
+const CLIENT_ANALYSIS_TIMEOUT_MS = 300_000;
 const PUBLIC_TEST_MODE = true;
 
 async function fetchWithTimeout(

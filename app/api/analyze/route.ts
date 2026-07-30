@@ -9,6 +9,7 @@ import {
 } from "../_safety";
 
 export const runtime = "nodejs";
+export const maxDuration = 300;
 
 const modelName = "gemini-2.5-flash";
 
