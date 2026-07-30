@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { apiError } from "../_safety";
+import { apiError, getErrorMessage } from "../_safety";
 
 export const runtime = "nodejs";
 
@@ -62,10 +62,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ text, fileName: file.name });
   } catch (error) {
     console.error("PDF extraction failed:", error);
-    return apiError(
-      "PDF_EXTRACTION_FAILED",
-      "Nie udało się odczytać pliku PDF. Sprawdź, czy plik nie jest uszkodzony lub zabezpieczony hasłem.",
-      422,
+    return NextResponse.json(
+      {
+        success: false,
+        errorType: "PDF_EXTRACTION_FAILED",
+        userMessage: "Nie udało się odczytać pliku PDF. Sprawdź, czy plik nie jest uszkodzony lub zabezpieczony hasłem.",
+        debugMessage: getErrorMessage(error).slice(0, 300),
+      },
+      { status: 422 },
     );
   } finally {
     await parser?.destroy();
