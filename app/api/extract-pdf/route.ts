@@ -1,4 +1,3 @@
-import { PDFParse } from "pdf-parse";
 import { NextResponse } from "next/server";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -7,13 +6,6 @@ import { apiError } from "../_safety";
 export const runtime = "nodejs";
 
 const maxFileSize = 15 * 1024 * 1024;
-
-// Next.js nie przenosi automatycznie workera pdf.js do bundla Turbopacka.
-// Wskazujemy go jawnie z katalogu node_modules, aby parsowanie działało lokalnie
-// oraz w zwykłym środowisku Node.js.
-PDFParse.setWorker(
-  pathToFileURL(path.join(process.cwd(), "node_modules/pdf-parse/dist/worker/pdf.worker.mjs")).toString(),
-);
 
 export async function POST(request: Request) {
   let formData: FormData;
@@ -38,8 +30,15 @@ export async function POST(request: Request) {
     return apiError("FILE_TOO_LARGE", "Plik PDF jest zbyt duży. Maksymalny rozmiar to 15 MB.", 413);
   }
 
-  let parser: PDFParse | undefined;
+  let parser: { getText: () => Promise<{ text: string }>; destroy: () => Promise<void> } | undefined;
   try {
+    // Ładujemy parser dopiero podczas żądania. Dzięki temu Vercel nie próbuje
+    // inicjalizować pdf.js podczas samego ładowania funkcji serverless.
+    const { PDFParse } = await import("pdf-parse");
+    PDFParse.setWorker(
+      pathToFileURL(path.join(process.cwd(), "node_modules/pdf-parse/dist/worker/pdf.worker.mjs")).toString(),
+    );
+
     const data = new Uint8Array(await file.arrayBuffer());
     parser = new PDFParse({ data });
     const parsed = await parser.getText();
