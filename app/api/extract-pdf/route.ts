@@ -1,14 +1,56 @@
+import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { apiError } from "../_safety";
+import { apiError, checkRateLimit } from "../_safety";
 
 export const runtime = "nodejs";
 
 const maxFileSize = 15 * 1024 * 1024;
 
+async function extractScannedPdfText(data: Uint8Array) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "your_gemini_api_key_here") return null;
+
+  const ai = new GoogleGenAI({ apiKey });
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            inlineData: {
+              mimeType: "application/pdf",
+              data: Buffer.from(data).toString("base64"),
+            },
+          },
+          {
+            text: "To jest skan dokumentu procesowego. Odczytaj cały możliwy tekst po polsku, zachowaj kolejność stron i nie dodawaj komentarzy ani streszczenia. Zwróć wyłącznie odczytany tekst.",
+          },
+        ],
+      },
+    ],
+    config: {
+      responseMimeType: "text/plain",
+      thinkingConfig: { thinkingBudget: 0 },
+    },
+  });
+
+  return response.text?.trim() || "";
+}
+
 export async function POST(request: Request) {
+  const rateLimit = checkRateLimit(request, "pdf");
+  if (!rateLimit.allowed) {
+    return apiError(
+      "RATE_LIMIT",
+      `Limit odczytu dokumentów został osiągnięty. Spróbuj ponownie za około ${Math.ceil(rateLimit.retryAfterSeconds / 60)} min.`,
+      429,
+    );
+  }
+
   let formData: FormData;
   try {
     formData = await request.formData();
@@ -55,7 +97,17 @@ export async function POST(request: Request) {
     const data = new Uint8Array(await file.arrayBuffer());
     parser = new PDFParse({ data });
     const parsed = await parser.getText();
-    const text = parsed.text.trim();
+    let text = parsed.text.trim();
+    let ocrUsed = false;
+
+    if (!text) {
+      const ocrText = await extractScannedPdfText(data);
+      if (ocrText === null) {
+        return apiError("OCR_UNAVAILABLE", "Nie można uruchomić OCR. Brak skonfigurowanego klucza usługi AI.", 503);
+      }
+      text = ocrText;
+      ocrUsed = true;
+    }
 
     if (!text) {
       return apiError(
@@ -65,7 +117,7 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ text, fileName: file.name });
+    return NextResponse.json({ text, fileName: file.name, ocrUsed });
   } catch (error) {
     console.error("PDF extraction failed:", error);
     return apiError(

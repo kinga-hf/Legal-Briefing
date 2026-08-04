@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
-import { apiError, classifyGeminiError, MAX_CONTEXT_CHARS, runWithSafetyGuard } from "../_safety";
+import { apiError, checkRateLimit, classifyGeminiError, MAX_CONTEXT_CHARS, runWithSafetyGuard } from "../_safety";
 
 export const runtime = "nodejs";
 
@@ -45,6 +45,15 @@ i nie jest indywidualną poradą prawną.
 `.trim();
 
 export async function POST(request: Request) {
+  const rateLimit = checkRateLimit(request, "chat");
+  if (!rateLimit.allowed) {
+    return apiError(
+      "RATE_LIMIT",
+      `Limit wiadomości został osiągnięty. Spróbuj ponownie za około ${Math.ceil(rateLimit.retryAfterSeconds / 60)} min.`,
+      429,
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();

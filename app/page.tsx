@@ -154,6 +154,8 @@ const formalPersonaOptions: Array<{ value: FormalChatPersona; description: strin
   { value: "Podsumowanie dla Klienta (Plain Language)", description: "prosty język dla klienta" },
 ];
 
+type AnalysisMode = "quick" | "full";
+
 const CLIENT_REQUEST_TIMEOUT_MS = 30_000;
 const CLIENT_ANALYSIS_TIMEOUT_MS = 300_000;
 const PUBLIC_TEST_MODE = true;
@@ -763,6 +765,7 @@ export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("full");
   const [error, setError] = useState("");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [checkedChecklist, setCheckedChecklist] = useState<Record<number, boolean>>({});
@@ -1007,7 +1010,7 @@ export default function Home() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, documentType, context }),
+          body: JSON.stringify({ text, documentType, context, analysisMode }),
         },
         CLIENT_ANALYSIS_TIMEOUT_MS,
       );
@@ -1287,6 +1290,24 @@ export default function Home() {
                   rows={4}
                   className="w-full resize-y rounded-lg border border-[#C5A059]/30 bg-[#001730] px-3.5 py-3 text-sm leading-6 text-slate-200 outline-none placeholder:text-slate-500 transition focus:border-[#C5A059] focus:ring-2 focus:ring-[#C5A059]"
                 />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-200" htmlFor="analysisMode">
+                  Tryb analizy
+                </label>
+                <select
+                  id="analysisMode"
+                  value={analysisMode}
+                  onChange={(event) => setAnalysisMode(event.target.value as AnalysisMode)}
+                  className="w-full rounded-lg border border-[#C5A059]/30 bg-[#001730] px-3.5 py-3 text-sm text-slate-200 outline-none transition focus:border-[#C5A059] focus:ring-2 focus:ring-[#C5A059]"
+                >
+                  <option value="full">Pełna analiza procesowa - dokładniejsza</option>
+                  <option value="quick">Szybka analiza - krótsza odpowiedź</option>
+                </select>
+                <p className="mt-1 text-xs text-slate-400">
+                  Tryb szybki ogranicza rozumowanie i liczbę elementów, aby skrócić czas oczekiwania.
+                </p>
               </div>
 
               {error && (

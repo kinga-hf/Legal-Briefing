@@ -125,4 +125,13 @@ Następnie otwórz: `http://localhost:3000`
 
 ## Weryfikacja
 
+## Aktualny tryb testowy
+
+- Aplikacja jest publiczna i nie wymaga logowania.
+- Historia spraw i czat nie są obecnie zapisywane w Supabase.
+- PDF-y bez warstwy tekstowej są przekazywane do OCR Gemini.
+- Analiza ma tryb szybki i pełny.
+- Publiczne endpointy mają ograniczenie 5 zapytań na 10 minut z jednego adresu na instancję funkcji.
+- Timeout pełnej analizy i maksymalny czas funkcji Vercel wynoszą 300 sekund.
+
 Ostatnia kompilacja produkcyjna `npm run build` zakończyła się pomyślnie.

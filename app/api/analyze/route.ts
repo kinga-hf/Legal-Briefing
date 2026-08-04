@@ -4,6 +4,7 @@ import {
   ANALYSIS_TIMEOUT_MS,
   apiError,
   classifyGeminiError,
+  checkRateLimit,
   MAX_CONTEXT_CHARS,
   runWithSafetyGuard,
 } from "../_safety";
@@ -319,7 +320,17 @@ export async function POST(request: Request) {
     return apiError("INVALID_BODY", "Treść żądania musi być obiektem JSON.", 400);
   }
 
-  const { text, documentType, context } = body as Record<string, unknown>;
+  const { text, documentType, context, analysisMode } = body as Record<string, unknown>;
+  const selectedAnalysisMode = analysisMode === "quick" ? "quick" : "full";
+
+  const rateLimit = checkRateLimit(request, "analysis");
+  if (!rateLimit.allowed) {
+    return apiError(
+      "RATE_LIMIT",
+      `Limit analiz został osiągnięty. Spróbuj ponownie za około ${Math.ceil(rateLimit.retryAfterSeconds / 60)} min.`,
+      429,
+    );
+  }
 
   if (
     typeof text !== "string" ||
@@ -349,6 +360,8 @@ export async function POST(request: Request) {
   }
 
   const prompt = `
+Tryb analizy: ${selectedAnalysisMode === "quick" ? "SZYBKI - odpowiadaj zwięźle i priorytetowo" : "PEŁNY - przeprowadź kompletną analizę"}
+
 Typ dokumentu: ${documentType.trim()}
 
 Kontekst sprawy:
@@ -367,9 +380,11 @@ ${text.trim()}
         model: modelName,
         contents: prompt,
         config: {
-          systemInstruction,
+          systemInstruction: `${systemInstruction}\n\n${selectedAnalysisMode === "quick" ? "W trybie szybkim ogranicz opisy do najważniejszych punktów, wybierz maksymalnie 3 zarzuty i 3 wnioski, zachowując poprawny JSON." : "W trybie pełnym zachowaj pełną szczegółowość analizy."}`,
           responseMimeType: "application/json",
           responseSchema: analysisSchema,
+          thinkingConfig: { thinkingBudget: selectedAnalysisMode === "quick" ? 0 : 2048 },
+          maxOutputTokens: selectedAnalysisMode === "quick" ? 8_000 : 16_000,
           abortSignal,
         },
       }),
